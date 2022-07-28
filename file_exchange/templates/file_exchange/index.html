@@ -1,0 +1,12 @@
+{% extends "file_exchange/layout.html" %}
+{% load static %}
+
+{% block body %}
+    <div>
+        <h5>Upload csv file from <a href="https://www.ebay.com/sh/reports">Ebay</a></h5>
+        <form method="POST" enctype="multipart/form-data">
+            <input type="file" name="csv-file" accept="csv">
+            <button type="submit">Upload</button>
+        </form>
+    </div>
+{% endblock %}
