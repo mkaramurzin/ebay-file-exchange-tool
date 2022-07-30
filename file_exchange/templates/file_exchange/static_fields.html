@@ -2,13 +2,19 @@
 {% load static %}
 
 {% block body %}
-    <h3>Enter listing info:</h3>
-    <form>
+    <h3>Enter static listing info:</h3>
+    <form method="POST" action="{% url 'unique' %}">
         {% for value in headers %}
             <div>
                 <Label>{{ value.name }}</Label>
-                <input type="text">
+                {% if "*Category" in value.name %}
+                    <input name="{{ value.name }}" value="{{ cat_id }}" type="text" disabled>
+                {% else %}
+                    <input name="{{ value.name }}" type="text">
+                {% endif %}
             </div>
         {% endfor %}
+        <input hidden value="{{ file_id }}" type="text" name="file_id">
+        <button type="submit">Submit</button>
     </form>
 {% endblock %}

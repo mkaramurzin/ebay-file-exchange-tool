@@ -88,6 +88,9 @@ def index(request):
 
             writer.writerow(next(reader))
             writer.writerow(next(reader))
+
+            reader = list(csv.reader(inp))
+            cat_id = reader[4][1]
         shutil.move(tempfile.name, filename)
 
         # fill fields
@@ -105,8 +108,27 @@ def index(request):
                     new_file.headers.add(field)
                     new_file.save()
                     
-
-        
+        res = [int(i) for i in cat_id.split() if i.isdigit()]
         return render(request, "file_exchange/static_fields.html", {
-            "headers": new_file.headers.all()
+            "headers": new_file.headers.all(),
+            "cat_id": res[0],
+            "file_id": new_file.id
         })
+
+def unique(request):
+    if request.method == 'POST':
+        new_file = File.objects.get(id=request.POST['file_id'])
+        filename = new_file.csv_dir
+
+        tempfile = NamedTemporaryFile('wt', delete=False, encoding="utf8")
+
+        with open(filename, 'rt', encoding="utf8") as file, tempfile:
+            reader = list(csv.reader(file))
+            writer = csv.writer(tempfile)
+
+            i, j = 0
+            for row in reader:
+                i += 1
+                writer.writerow(row)
+            
+            
