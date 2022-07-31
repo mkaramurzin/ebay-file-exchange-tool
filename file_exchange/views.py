@@ -8,8 +8,9 @@ from django.views.decorators.csrf import csrf_exempt
 import csv
 from tempfile import NamedTemporaryFile
 import shutil
+import json
 
-from . models import User, File, Field
+from . models import ListingInfo, User, File, Field
 
 # Create your views here.
 
@@ -101,7 +102,7 @@ def index(request):
 
             for row in reader:
                 for cell in row:
-                    print(cell)
+                    # print(cell)
                     field = Field()
                     field.name = cell
                     field.save()
@@ -109,26 +110,87 @@ def index(request):
                     new_file.save()
                     
         res = [int(i) for i in cat_id.split() if i.isdigit()]
+
+
         return render(request, "file_exchange/static_fields.html", {
             "headers": new_file.headers.all(),
             "cat_id": res[0],
             "file_id": new_file.id
         })
 
+# def unique(request):
+#     if request.method == 'POST':
+#         new_file = File.objects.get(id=request.POST['file_id'])
+#         filename = new_file.csv_dir
+
+#         tempfile = NamedTemporaryFile('wt', delete=False, encoding="utf8")
+
+#         with open(filename, 'rt', encoding="utf8") as file, tempfile:
+#             reader = list(csv.reader(file))
+#             writer = csv.writer(tempfile)
+
+#             i, j = 0
+#             for row in reader:
+#                 i += 1
+#                 writer.writerow(row)
+
+@csrf_exempt
+def static(request):
+    new_file = File.objects.get(id=request.POST['file_id'])
+
+    # inputs = [value for name, value in request.POST.iteritems() if name.startswith('v_')]
+
+    inputs = request.POST.keys()
+
+    for input in inputs:
+        field = Field(name=input, value=request.POST[input])
+        field.save()
+        new_file.static.add(field)
+        new_file.save()
+    
+    return render(request, "file_exchange/unique.html", {
+        "inputs": new_file.static.all()
+    })
+
+@csrf_exempt
 def unique(request):
     if request.method == 'POST':
+
         new_file = File.objects.get(id=request.POST['file_id'])
-        filename = new_file.csv_dir
 
-        tempfile = NamedTemporaryFile('wt', delete=False, encoding="utf8")
+        new_listing = ListingInfo()
+        new_listing.save()
 
-        with open(filename, 'rt', encoding="utf8") as file, tempfile:
-            reader = list(csv.reader(file))
-            writer = csv.writer(tempfile)
+        inputs = request.POST.keys()
 
-            i, j = 0
-            for row in reader:
-                i += 1
-                writer.writerow(row)
+        for input in inputs:
+            field = Field(name=input, value=request.POST[input])
+            field.save()
+            # print(f"{field.name}: {field.value}")
+            new_listing.data.add(field)
+            new_listing.save()
+        
+        new_file.listings.add(new_listing)
+        new_file.save()
+
+        if 'end' in request.POST:
+            filename = f"templates/{new_file.csv_dir}"
+            with open(filename, 'wt', encoding="utf8") as file:
+                writer = csv.writer(file)
+
+                
+                # for row in new_file.listings.all():
+                #     writer.writerow(row.data.all())
+            # for data in new_file.listings.all():
+            #     for d in data.data.all():
+            #         print(f"{d.id}: {d.name}")
+
             
-            
+            return render(request, 'file_exchange/download.html', {
+                "file": filename
+            })
+
+        else:
+            return render(request, "file_exchange/unique.html", {
+                "inputs": new_file.static.all()
+            })

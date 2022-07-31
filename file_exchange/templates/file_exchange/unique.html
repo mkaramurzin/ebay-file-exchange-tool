@@ -1,0 +1,25 @@
+{% extends "file_exchange/layout.html" %}
+{% load static %}
+
+{% block body %}
+    <form method="post" action="{% url 'unique' %}">
+        {% for field in inputs %}
+            {% if 'file_id' in field.name %}
+            <div>
+                <input id="file-id" value="{{ field.value }}" type="text" name="file_id" hidden>
+            </div>
+            {% else %}
+            <div>
+                <label>{{ field.name }}</label>
+                {% if "*" in field.name %}
+                <input value="{{ field.value }}" type="text" required name="{{ field.name }}">
+                {% else %}
+                <input value="{{ field.value }}" type="text" name="{{ field.name }}">
+                {% endif %}
+            </div>
+            {% endif %}
+        {% endfor %}
+        <button type="submit" name="next" value="next">Next listing</button>
+        <button type="submit" name="end" value="end">Finish</button>
+    </form>
+{% endblock %}

@@ -7,7 +7,8 @@ class User(AbstractUser):
     pass
 
 class Field(models.Model):
-    name = models.CharField(max_length=31)
+    name = models.CharField(max_length=31, default="")
+    value = models.CharField(max_length=31, default="")
 
 class ListingInfo(models.Model):
     data = models.ManyToManyField(Field)
@@ -16,4 +17,5 @@ class File(models.Model):
     # Many-to-many
     csv_dir = models.CharField(max_length=63, default=None)
     headers = models.ManyToManyField(Field)
-    listings = models.ManyToManyField(ListingInfo)
+    static = models.ManyToManyField(Field, related_name="static_fields")
+    listings = models.ManyToManyField(ListingInfo, related_name="unique_fields")
