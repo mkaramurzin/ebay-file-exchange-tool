@@ -2,5 +2,6 @@
 {% load static %}
 
 {% block body %}
-    <a href="{{ file }}" download="listings.csv">Download</a>
+<h3>{{ file }}</h3>
+    <a href="{% url 'download' id=id %}">Download</a>
 {% endblock %}

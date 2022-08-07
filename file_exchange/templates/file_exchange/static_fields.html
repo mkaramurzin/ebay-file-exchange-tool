@@ -2,19 +2,25 @@
 {% load static %}
 
 {% block body %}
-    <h3>Enter static listing info:</h3>
-    <form method="POST" action="{% url 'static' %}">
-        {% for value in headers %}
-            <div>
-                <Label>{{ value.name }}</Label>
-                {% if "*Category" in value.name %}
-                    <input name="{{ value.name }}" value="{{ cat_id }}" type="text">
-                {% else %}
-                    <input name="{{ value.name }}" type="text">
-                {% endif %}
+    <section class="form-section">
+        <h3 class="title">Enter static listing info:</h3>
+        <form method="POST" action="{% url 'static' %}">
+            <div class="form row">
+                <div class="container">
+                    {% for value in headers %}
+                    <div class="form-field col-lg 6">
+                        {% if "*Category" in value.name %}
+                            <input id="{{ value.id }}" class="input-text" name="{{ value.name }}" value="{{ cat_id }}" type="text">
+                        {% else %}
+                            <input id="{{ value.id }}" class="input-text" name="{{ value.name }}" type="text">
+                        {% endif %}
+                        <label for="{{ value.id }}" class="label">{{ value.name }}</label>
+                    </div>
+                    {% endfor %}
+                    <input id="file-id" value="{{ file_id }}" type="text" name="file_id" hidden>
+                    <button class="btn btn-primary" type="submit">Continue</button>
+                </div>
             </div>
-        {% endfor %}
-        <input id="file-id" value="{{ file_id }}" type="text" name="file_id" hidden>
-        <button type="submit">Submit</button>
-    </form>
+        </form>
+    </section>
 {% endblock %}

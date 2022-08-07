@@ -1,3 +1,4 @@
+import os
 from unicodedata import name
 from django.contrib.auth import authenticate, login, logout
 from django.db import IntegrityError
@@ -83,11 +84,11 @@ def index(request):
         tempfile = NamedTemporaryFile('wt', delete=False, encoding="utf8")
         filename = f'templates/{new_file.csv_dir}'
 
-        with open(filename, 'rt', encoding="utf8") as inp, tempfile:
+        with open(filename, 'rt', encoding="utf8", newline='') as inp, tempfile:
             reader = csv.reader(inp)
             writer = csv.writer(tempfile)
 
-            writer.writerow(next(reader))
+            var = next(reader)
             writer.writerow(next(reader))
 
             reader = list(csv.reader(inp))
@@ -95,9 +96,8 @@ def index(request):
         shutil.move(tempfile.name, filename)
 
         # fill fields
-        with open(filename, 'rt', encoding="utf8") as inp:
+        with open(filename, 'rt', encoding="utf8", newline='') as inp:
             reader = csv.reader(inp)
-            next(reader)
             reader = list(csv.reader(inp))
 
             for row in reader:
@@ -164,6 +164,8 @@ def unique(request):
         inputs = request.POST.keys()
 
         for input in inputs:
+            if input == 'end' or input == 'file_id':
+                continue
             field = Field(name=input, value=request.POST[input])
             field.save()
             # print(f"{field.name}: {field.value}")
@@ -175,22 +177,46 @@ def unique(request):
 
         if 'end' in request.POST:
             filename = f"templates/{new_file.csv_dir}"
-            with open(filename, 'wt', encoding="utf8") as file:
-                writer = csv.writer(file)
+            tempfile = NamedTemporaryFile('wt', delete=False, encoding="utf8", newline='')
 
-                
-                # for row in new_file.listings.all():
-                #     writer.writerow(row.data.all())
-            # for data in new_file.listings.all():
-            #     for d in data.data.all():
-            #         print(f"{d.id}: {d.name}")
+            with open(filename, 'rt', encoding="utf8", newline='') as file, tempfile:
+                writer = csv.writer(tempfile)
+                reader = csv.reader(file)
+                writer.writerow(next(reader))
 
-            
+                for listing in new_file.listings.all():
+                    row = []
+                    for data in listing.data.all():
+                        row.append(data.value)
+                    writer.writerow(row)
+
+            shutil.move(tempfile.name, filename)
+
             return render(request, 'file_exchange/download.html', {
-                "file": filename
+                "file": filename,
+                "id": new_file.id
             })
 
         else:
             return render(request, "file_exchange/unique.html", {
                 "inputs": new_file.static.all()
             })
+
+def download(request, id):
+
+    file = File.objects.get(id=id)
+    filename = file.csv_dir
+
+    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+    # with open(os.path.join(base_dir+'/',filename), 'wt') as f:
+    #     for data in filename:
+    #         f.write(data)
+    #     f.close()
+    
+    with open(os.path.join(base_dir+'/templates',filename), 'rt', newline='') as f:
+        data = f.read()
+
+    response = HttpResponse(data)
+    response['Content-Disposition'] = 'attachment; filename="listings.csv"'
+    return response
