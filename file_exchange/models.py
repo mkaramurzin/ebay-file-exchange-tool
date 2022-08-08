@@ -19,3 +19,8 @@ class File(models.Model):
     headers = models.ManyToManyField(Field)
     static = models.ManyToManyField(Field, related_name="static_fields")
     listings = models.ManyToManyField(ListingInfo, related_name="unique_fields")
+
+class SavedTemplate(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    name = models.CharField(max_length=31)
+    file = models.ForeignKey(File, on_delete=models.CASCADE)

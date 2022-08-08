@@ -9,5 +9,7 @@ urlpatterns = [
     path("register", views.register, name="register"),
     path("static", views.static, name="static"),
     path("unique", views.unique, name="unique"),
-    path("download/<int:id>", views.download, name="download")
+    path("download/<int:id>", views.download, name="download"),
+    path("templates", views.templates, name="templates"),
+    path("template/<int:id>", views.template, name="template")
 ]

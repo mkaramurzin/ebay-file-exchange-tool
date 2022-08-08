@@ -19,8 +19,23 @@
                     {% endfor %}
                     <input id="file-id" value="{{ file_id }}" type="text" name="file_id" hidden>
                     <button class="btn btn-primary" type="submit">Continue</button>
+                    {% if request.user.is_authenticated %}
+                        <button id="save-btn" class="btn btn-secondary" type="button">Save as Template</button>
+                        <input id="save" name="save" value="False" hidden>
+                    {% endif %}
                 </div>
             </div>
         </form>
     </section>
+{% endblock %}
+
+{% block script %}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelector('#save-btn').addEventListener('click', function() {
+                let name = prompt("Name your template:", "");
+                document.querySelector('#save').value = name;
+            })
+        })
+    </script>
 {% endblock %}

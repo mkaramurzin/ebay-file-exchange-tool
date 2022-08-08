@@ -10,8 +10,9 @@ import csv
 from tempfile import NamedTemporaryFile
 import shutil
 import json
+from datetime import datetime
 
-from . models import ListingInfo, User, File, Field
+from . models import ListingInfo, SavedTemplate, User, File, Field
 
 # Create your views here.
 
@@ -81,20 +82,26 @@ def index(request):
             for chunk in file.chunks():
                 destination.write(chunk)
         
-        tempfile = NamedTemporaryFile('wt', delete=False, encoding="utf8")
+        # tempfile = NamedTemporaryFile('wt', delete=False, encoding="utf8")
         filename = f'templates/{new_file.csv_dir}'
 
-        with open(filename, 'rt', encoding="utf8", newline='') as inp, tempfile:
-            reader = csv.reader(inp)
-            writer = csv.writer(tempfile)
+        now = datetime.now()
+        dt_string = now.strftime("%d-%m-%Y-%H-%M-%S")
 
-            var = next(reader)
-            writer.writerow(next(reader))
+        with open(filename, 'rt', encoding="utf8", newline='') as inp:
+            filename = 'templates/ebay-listings-' + str(dt_string) + '.csv'
+            with open(filename, 'wt', encoding="utf8") as out:
+                reader = csv.reader(inp)
+                writer = csv.writer(out)
 
-            reader = list(csv.reader(inp))
-            cat_id = reader[4][1]
-        shutil.move(tempfile.name, filename)
+                next(reader)
+                writer.writerow(next(reader))
 
+                reader = list(csv.reader(inp))
+                cat_id = reader[4][1]
+        # shutil.move(tempfile.name, filename)
+
+        new_file.csv_dir = filename
         # fill fields
         with open(filename, 'rt', encoding="utf8", newline='') as inp:
             reader = csv.reader(inp)
@@ -143,10 +150,16 @@ def static(request):
     inputs = request.POST.keys()
 
     for input in inputs:
+        if input == 'save':
+            continue
         field = Field(name=input, value=request.POST[input])
         field.save()
         new_file.static.add(field)
         new_file.save()
+    
+    if request.user.is_authenticated:
+        if request.POST['save'] != 'False':
+            template = SavedTemplate.objects.create(user=request.user, name=request.POST['save'], file=new_file)
     
     return render(request, "file_exchange/unique.html", {
         "inputs": new_file.static.all()
@@ -220,3 +233,24 @@ def download(request, id):
     response = HttpResponse(data)
     response['Content-Disposition'] = 'attachment; filename="listings.csv"'
     return response
+
+def templates(request):
+    if request.user.id is None:
+        return HttpResponseRedirect(reverse('login'))
+
+    return render(request, "file_exchange/templates.html", {
+        "templates": SavedTemplate.objects.filter(user=request.user).all
+    })
+
+def template(request, id):
+    template = SavedTemplate.objects.get(id=id)
+    new_file = template.file
+
+    # field = Field(name='skip', value='skip')
+    # field.save()
+    # new_file.static.add(field)
+    # new_file.save()
+
+    return render(request, "file_exchange/template.html", {
+        "inputs": new_file.static.all()
+    })

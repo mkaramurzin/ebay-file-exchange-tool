@@ -1,0 +1,36 @@
+{% extends "file_exchange/layout.html" %}
+{% load static %}
+
+{% block body %}
+    <section class="form-section">
+        <h3 class="title">Confirm Template Static Fields:</h3>
+        <form method="POST" action="{% url 'unique' %}">
+            <div class="form row">
+                <div class="container">
+                    {% for field in inputs %}
+                    <div class="form-field col-lg 6">
+
+                        {% if 'file_id' in field.name %}
+                            <div>
+                                <input id="file-id" value="{{ field.value }}" type="text" name="file_id" hidden>
+                            </div>
+                        {% elif 'skip' in field.name %}
+                            <input name="skip" value="skip" hidden>
+                        {% else %}
+                            <div>
+                                {% if "*" in field.name %}
+                                <input id="{{ field.id }}" class="input-text" value="{{ field.value }}" type="text" name="{{ field.name }}">
+                                {% else %}
+                                <input id="{{ field.id }}" class="input-text" value="{{ field.value }}" type="text" name="{{ field.name }}">
+                                {% endif %}
+                                <label for="{{ value.id}}" class="label">{{ field.name }}</label>
+                            </div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                    <button type="submit" name="next" value="next" class="btn btn-primary">Continue</button>
+                </div>
+            </div>
+        </form>
+    </section>
+{% endblock %}
