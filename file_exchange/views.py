@@ -89,8 +89,8 @@ def index(request):
         dt_string = now.strftime("%d-%m-%Y-%H-%M-%S")
 
         with open(filename, 'rt', encoding="utf8", newline='') as inp:
-            filename = 'templates/ebay-listings-' + str(dt_string) + '.csv'
-            with open(filename, 'wt', encoding="utf8") as out:
+            filename = 'ebay-listings-' + str(dt_string) + '.csv'
+            with open(f'templates/{filename}', 'wt', encoding="utf8") as out:
                 reader = csv.reader(inp)
                 writer = csv.writer(out)
 
@@ -103,7 +103,7 @@ def index(request):
 
         new_file.csv_dir = filename
         # fill fields
-        with open(filename, 'rt', encoding="utf8", newline='') as inp:
+        with open(f'templates/{filename}', 'rt', encoding="utf8", newline='') as inp:
             reader = csv.reader(inp)
             reader = list(csv.reader(inp))
 
@@ -145,12 +145,13 @@ def index(request):
 def static(request):
     new_file = File.objects.get(id=request.POST['file_id'])
 
-    # inputs = [value for name, value in request.POST.iteritems() if name.startswith('v_')]
+    new_file.static.clear()
 
     inputs = request.POST.keys()
 
+
     for input in inputs:
-        if input == 'save':
+        if input == 'save' or input == 'next':
             continue
         field = Field(name=input, value=request.POST[input])
         field.save()
@@ -158,7 +159,7 @@ def static(request):
         new_file.save()
     
     if request.user.is_authenticated:
-        if request.POST['save'] != 'False':
+        if 'save' in inputs and request.POST['save'] != 'False':
             template = SavedTemplate.objects.create(user=request.user, name=request.POST['save'], file=new_file)
     
     return render(request, "file_exchange/unique.html", {
@@ -177,7 +178,7 @@ def unique(request):
         inputs = request.POST.keys()
 
         for input in inputs:
-            if input == 'end' or input == 'file_id':
+            if input == 'end' or input == 'file_id' or input == 'save' or input == 'next' or input == 'skip':
                 continue
             field = Field(name=input, value=request.POST[input])
             field.save()
