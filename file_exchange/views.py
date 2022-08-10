@@ -144,8 +144,11 @@ def index(request):
 @csrf_exempt
 def static(request):
     new_file = File.objects.get(id=request.POST['file_id'])
+    print(f'-------------------------------------{new_file.csv_dir}------------------------------')
 
     new_file.static.clear()
+    new_file.listings.clear()
+    new_file.save()
 
     inputs = request.POST.keys()
 
@@ -171,6 +174,9 @@ def unique(request):
     if request.method == 'POST':
 
         new_file = File.objects.get(id=request.POST['file_id'])
+
+        print(f'-------------------------------------{new_file.csv_dir}------------------------------')
+
 
         new_listing = ListingInfo()
         new_listing.save()
@@ -220,6 +226,7 @@ def download(request, id):
 
     file = File.objects.get(id=id)
     filename = file.csv_dir
+    print(f'-------------------------------------{file.csv_dir}------------------------------')
 
     base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -245,13 +252,23 @@ def templates(request):
 
 def template(request, id):
     template = SavedTemplate.objects.get(id=id)
-    new_file = template.file
 
-    # field = Field(name='skip', value='skip')
-    # field.save()
-    # new_file.static.add(field)
-    # new_file.save()
+    now = datetime.now()
+    dt_string = now.strftime("%d-%m-%Y-%H-%M-%S")
+    filename = f'ebay-listing-{dt_string}.csv'
+
+    with open("templates/"+filename, 'wt', encoding='utf8') as file:
+        writer = csv.writer(file)
+
+        row = []
+        for data in template.file.headers.all():
+            row.append(data.name)
+        writer.writerow(row)
+    
+    template.file.csv_dir = filename
+    template.file.save()
 
     return render(request, "file_exchange/template.html", {
-        "inputs": new_file.static.all()
+        "inputs": template.file.static.all(),
+        "dir": filename
     })
