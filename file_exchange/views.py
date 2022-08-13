@@ -99,7 +99,8 @@ def index(request):
 
                 reader = list(csv.reader(inp))
                 cat_id = reader[4][1]
-        # shutil.move(tempfile.name, filename)
+        
+        os.remove('templates/'+new_file.csv_dir)
 
         new_file.csv_dir = filename
         # fill fields
@@ -170,6 +171,15 @@ def static(request):
     })
 
 @csrf_exempt
+def save(request):
+    data = json.loads(request.body)
+    file = File.objects.get(id=data.get("file_id", ""))
+
+    template = SavedTemplate.objects.create(user=request.user, name=data.get("name", ""), file=file)
+    template.save()
+    return JsonResponse({"message": "Successfully added new template"})
+
+@csrf_exempt
 def unique(request):
     if request.method == 'POST':
 
@@ -238,6 +248,7 @@ def download(request, id):
     with open(os.path.join(base_dir+'/templates',filename), 'rt', newline='') as f:
         data = f.read()
 
+
     response = HttpResponse(data)
     response['Content-Disposition'] = 'attachment; filename="listings.csv"'
     return response
@@ -247,7 +258,7 @@ def templates(request):
         return HttpResponseRedirect(reverse('login'))
 
     return render(request, "file_exchange/templates.html", {
-        "templates": SavedTemplate.objects.filter(user=request.user).all
+        "templates": SavedTemplate.objects.filter(user=request.user).order_by('-id')
     })
 
 def template(request, id):
@@ -272,3 +283,10 @@ def template(request, id):
         "inputs": template.file.static.all(),
         "dir": filename
     })
+
+def delete(request, id):
+    file = File.objects.get(id=id)
+
+    SavedTemplate.objects.filter(file=file).delete()
+
+    return JsonResponse({"message": "template successfully deleted"})

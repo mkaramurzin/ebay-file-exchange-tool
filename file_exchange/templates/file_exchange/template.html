@@ -7,6 +7,7 @@
         <form method="POST" action="{% url 'static' %}">
             <div class="form row">
                 <div class="container">
+                    <button id="del-btn" type="button" class="btn btn-outline-danger">Delete Template</button>
                     {% for field in inputs %}
                     <div class="form-field col-lg 6">
 
@@ -31,4 +32,23 @@
             </div>
         </form>
     </section>
+{% endblock %}
+
+{% block script %}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            let id = document.querySelector('#file-id').getAttribute('value');
+            document.querySelector('#del-btn').addEventListener('click', function() {
+                fetch(`delete/${id}`)
+                .then(response => response.json())
+                .then(res => {
+                    document.querySelector('#del-btn').innerHTML = 'Deleted';
+                    document.querySelector('#del-btn').disabled = true;
+                })
+                .catch(error => {
+                    console.log(error);
+                });
+            })
+        })
+    </script>
 {% endblock %}

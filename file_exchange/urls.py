@@ -11,5 +11,9 @@ urlpatterns = [
     path("unique", views.unique, name="unique"),
     path("download/<int:id>", views.download, name="download"),
     path("templates", views.templates, name="templates"),
-    path("template/<int:id>", views.template, name="template")
+    path("template/<int:id>", views.template, name="template"),
+
+    #API
+    path('save', views.save, name="save"),
+    path('template/delete/<int:id>', views.delete, name="delete")
 ]

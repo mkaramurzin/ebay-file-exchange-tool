@@ -51,6 +51,7 @@
 }
 
 .template {
+    text-align: center;
     border: 1px solid grey;
     border-radius: 5px;
     margin-top: 20px;
@@ -59,9 +60,9 @@
 }
 
 .template h5 {
-    text-align: center;
     letter-spacing: 3px;
     line-height: 48px;
+    display: inline;
 }
 
 h3 {
