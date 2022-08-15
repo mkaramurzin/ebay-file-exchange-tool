@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-dc+!yf0dhe$26=lshqz1a1482tp1@^db9+d^6s#$1yq7&914&u
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['127.0.0.1','ebayhelpertool.herokuapp.com']
+ALLOWED_HOSTS = ['127.0.0.1','ebayhelper.herokuapp.com']
 
 
 # Application definition
